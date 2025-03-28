@@ -15,9 +15,6 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
-// Include BuddyPress integration
-require_once plugin_dir_path( __FILE__ ) . 'includes/buddyPress-integration.php';
-
 // Plugin activation hook
 function calculogic_activate() {
     // Code to run on plugin activation (e.g., create database tables, set default options)
@@ -46,3 +43,5 @@ function calculogic_init() {
     load_plugin_textdomain( 'calculogic', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 }
 add_action( 'plugins_loaded', 'calculogic_init' );
+// Include BuddyPress integration
+require_once plugin_dir_path( __FILE__ ) . 'includes/buddyPress-integration.php';
