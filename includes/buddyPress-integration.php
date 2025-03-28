@@ -1,6 +1,5 @@
-
 <?php
-    // Register a custom BuddyPress dashboard tab
+// Register a custom BuddyPress dashboard tab
 function calculogic_register_dashboard_tab() {
     bp_core_new_nav_item( array(
         'name'                    => __( 'Calculogic Dashboard', 'calculogic' ),
