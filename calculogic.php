@@ -43,5 +43,6 @@ function calculogic_init() {
     load_plugin_textdomain( 'calculogic', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 }
 add_action( 'plugins_loaded', 'calculogic_init' );
-// Include BuddyPress integration
-require_once plugin_dir_path( __FILE__ ) . 'includes/buddyPress-integration.php';
+add_action( 'plugins_loaded', function() {
+    require_once plugin_dir_path( __FILE__ ) . 'includes/buddyPress-integration.php';
+} );
