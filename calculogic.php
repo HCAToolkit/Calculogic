@@ -15,6 +15,8 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
+// Include BuddyPress integration
+require_once plugin_dir_path( __FILE__ ) . 'includes/buddyPress-integration.php';
 
 // Plugin activation hook
 function calculogic_activate() {
