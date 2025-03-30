@@ -49,6 +49,7 @@ function calculogic_init() {
     }
     require_once plugin_dir_path( __FILE__ ) . 'includes/custom-post-types.php';
     require_once plugin_dir_path( __FILE__ ) . 'includes/helpers.php';
+    require_once plugin_dir_path( __FILE__ ) . 'includes/template-loader.php';
 }
 add_action( 'plugins_loaded', 'calculogic_init' );
 
