@@ -15,6 +15,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
+
 // Plugin activation hook
 function calculogic_activate() {
     // Code to run on plugin activation (e.g., create database tables, set default options)
@@ -39,10 +40,20 @@ register_deactivation_hook( __FILE__, 'calculogic_deactivate' );
 
 // Plugin initialization
 function calculogic_init() {
-    // Code to initialize the plugin (e.g., load text domain, enqueue scripts)
+    // Load text domain for translations
     load_plugin_textdomain( 'calculogic', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+
+    // Include necessary files
+    require_once plugin_dir_path( __FILE__ ) . 'includes/buddyPress-integration.php';
+    require_once plugin_dir_path( __FILE__ ) . 'includes/custom-post-types.php';
+    require_once plugin_dir_path( __FILE__ ) . 'includes/helpers.php';
 }
 add_action( 'plugins_loaded', 'calculogic_init' );
-add_action( 'plugins_loaded', function() {
-    require_once plugin_dir_path( __FILE__ ) . 'includes/buddyPress-integration.php';
-} );
+
+// Enqueue scripts and styles
+function calculogic_enqueue_assets() {
+    wp_enqueue_style( 'calculogic-style', plugin_dir_url( __FILE__ ) . 'assets/css/style.css' );
+    wp_enqueue_script( 'calculogic-script', plugin_dir_url( __FILE__ ) . 'assets/js/script.js', array( 'jquery' ), null, true );
+}
+add_action( 'wp_enqueue_scripts', 'calculogic_enqueue_assets' );
+?>

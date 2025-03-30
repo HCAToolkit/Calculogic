@@ -10,23 +10,24 @@
  */
 if ( function_exists( 'bp_core_new_nav_item' ) ) {
 
-function calculogic_register_dashboard_tab() {
-    // Only show the dashboard on the logged-in user's own profile,
-    // or add additional checks here if collaborators should see it.
-    if ( bp_is_my_profile() || current_user_can( 'manage_options' ) ) {
-        bp_core_new_nav_item( array(
-            'name'                    => __( 'Calculogic Dashboard', 'calculogic' ),
-            'slug'                    => 'calculogic-dashboard',
-            'default_subnav_slug'     => 'calculogic-dashboard',
-            'position'                => 40,
-            'show_for_displayed_user' => true, // or false if you want it only on self
-            'screen_function'         => 'calculogic_dashboard_screen',
-            'item_css_id'             => 'calculogic-dashboard'
-        ) );
+    function calculogic_register_dashboard_tab() {
+        // Only show the dashboard on the logged-in user's own profile,
+        // or add additional checks here if collaborators should see it.
+        if ( bp_is_my_profile() || current_user_can( 'manage_options' ) ) {
+            bp_core_new_nav_item( array(
+                'name'                    => __( 'Calculogic Dashboard', 'calculogic' ),
+                'slug'                    => 'calculogic-dashboard',
+                'default_subnav_slug'     => 'calculogic-dashboard',
+                'position'                => 40,
+                'show_for_displayed_user' => true,
+                'screen_function'         => 'calculogic_dashboard_screen',
+                'item_css_id'             => 'calculogic-dashboard'
+            ) );
+        }
     }
+    add_action( 'bp_setup_nav', 'calculogic_register_dashboard_tab', 100 );
 }
-add_action( 'bp_setup_nav', 'calculogic_register_dashboard_tab', 100 );
-}
+
 function calculogic_dashboard_screen() {
     // Hook our dashboard content into the BuddyPress template content hook.
     add_action( 'bp_template_content', 'calculogic_dashboard_content' );
@@ -53,7 +54,6 @@ function calculogic_dashboard_content() {
             echo '<button id="calculogic-new" type="button">' . __( 'New Template/Quiz', 'calculogic' ) . '</button>';
             echo '<button id="calculogic-duplicate" type="button">' . __( 'Duplicate', 'calculogic' ) . '</button>';
             echo '<button id="calculogic-delete" type="button">' . __( 'Delete', 'calculogic' ) . '</button>';
-            // Optionally: a button or link for Collaborator Settings.
             echo '<button id="calculogic-collaborators" type="button">' . __( 'Collaborator Settings', 'calculogic' ) . '</button>';
         echo '</div>';
     echo '</div>';
@@ -61,15 +61,9 @@ function calculogic_dashboard_content() {
     // Optionally: include inline JavaScript initialization.
     ?>
     <script type="text/javascript">
-    // Example initialization code for your builder.
     (function($) {
         $(document).ready(function() {
-            // Initialize your Calculogic builder.
-            // You might load saved data via Ajax, bind events for New/Duplicate/Delete etc.
-            // For example:
             $('#calculogic-new').on('click', function() {
-                // Launch the builder in "new" mode (ask user: template or quiz?)
-                // Ajax call to create a new builder record and then load the builder UI.
                 alert("New builder initiated.");
             });
             $('#calculogic-duplicate').on('click', function() {
@@ -86,3 +80,4 @@ function calculogic_dashboard_content() {
     </script>
     <?php
 }
+?>

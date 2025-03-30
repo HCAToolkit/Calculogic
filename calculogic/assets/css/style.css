@@ -1,0 +1,53 @@
+/* 
+ * Calculogic Plugin Styles
+ * This file contains the CSS styles for the Calculogic plugin's front-end interface.
+ */
+
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+/* Dashboard styles */
+#calculogic-dashboard {
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Button styles */
+.calculogic-controls button {
+    background-color: #0073aa;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    padding: 10px 15px;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: background-color 0.3s;
+}
+
+.calculogic-controls button:hover {
+    background-color: #005177;
+}
+
+/* Header styles */
+h2 {
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+/* Placeholder styles */
+#calculogic-builder {
+    min-height: 300px;
+    border: 1px dashed #ccc;
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+}
