@@ -44,7 +44,9 @@ function calculogic_init() {
     load_plugin_textdomain( 'calculogic', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 
     // Include necessary files
-    require_once plugin_dir_path( __FILE__ ) . 'includes/buddyPress-integration.php';
+    if ( function_exists( 'bp_core_new_nav_item' ) ) {
+        require_once plugin_dir_path( __FILE__ ) . 'includes/buddyPress-integration.php';
+    }
     require_once plugin_dir_path( __FILE__ ) . 'includes/custom-post-types.php';
     require_once plugin_dir_path( __FILE__ ) . 'includes/helpers.php';
 }
