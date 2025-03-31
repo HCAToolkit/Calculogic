@@ -148,3 +148,60 @@ add_action( 'save_post', 'calculogic_save_configurations_meta_box' );
  * - Migrations: Write migration functions that update older configurations to the latest schema.
  * - Export/Transformation: With unified JSON, you can later build a transformation layer to export this configuration to other programming languages or formats.
  */
+// Register Taxonomy for Calculogic Types
+function calculogic_register_type_taxonomy() {
+    $labels = array(
+        'name'              => _x( 'Type Categories', 'taxonomy general name', 'calculogic' ),
+        'singular_name'     => _x( 'Type Category', 'taxonomy singular name', 'calculogic' ),
+        'search_items'      => __( 'Search Type Categories', 'calculogic' ),
+        'all_items'         => __( 'All Type Categories', 'calculogic' ),
+        'parent_item'       => __( 'Parent Type Category', 'calculogic' ),
+        'parent_item_colon' => __( 'Parent Type Category:', 'calculogic' ),
+        'edit_item'         => __( 'Edit Type Category', 'calculogic' ),
+        'update_item'       => __( 'Update Type Category', 'calculogic' ),
+        'add_new_item'      => __( 'Add New Type Category', 'calculogic' ),
+        'new_item_name'     => __( 'New Type Category Name', 'calculogic' ),
+        'menu_name'         => __( 'Type Category', 'calculogic' ),
+    );
+
+    $args = array(
+        'hierarchical'      => true, // works like categories
+        'labels'            => $labels,
+        'show_ui'           => true,
+        'show_admin_column' => true,
+        'query_var'         => true,
+        'rewrite'           => array( 'slug' => 'type-category' ),
+    );
+
+    register_taxonomy( 'calculogic_type_category', array( 'calculogic_type' ), $args );
+}
+add_action( 'init', 'calculogic_register_type_taxonomy' );
+
+// Register Taxonomy for Calculogic Configurations
+function calculogic_register_config_taxonomy() {
+    $labels = array(
+        'name'              => _x( 'Configuration Categories', 'taxonomy general name', 'calculogic' ),
+        'singular_name'     => _x( 'Configuration Category', 'taxonomy singular name', 'calculogic' ),
+        'search_items'      => __( 'Search Configuration Categories', 'calculogic' ),
+        'all_items'         => __( 'All Configuration Categories', 'calculogic' ),
+        'parent_item'       => __( 'Parent Configuration Category', 'calculogic' ),
+        'parent_item_colon' => __( 'Parent Configuration Category:', 'calculogic' ),
+        'edit_item'         => __( 'Edit Configuration Category', 'calculogic' ),
+        'update_item'       => __( 'Update Configuration Category', 'calculogic' ),
+        'add_new_item'      => __( 'Add New Configuration Category', 'calculogic' ),
+        'new_item_name'     => __( 'New Configuration Category Name', 'calculogic' ),
+        'menu_name'         => __( 'Configuration Category', 'calculogic' ),
+    );
+
+    $args = array(
+        'hierarchical'      => true, // works like categories
+        'labels'            => $labels,
+        'show_ui'           => true,
+        'show_admin_column' => true,
+        'query_var'         => true,
+        'rewrite'           => array( 'slug' => 'config-category' ),
+    );
+
+    register_taxonomy( 'calculogic_config_category', array( 'calculogic_config' ), $args );
+}
+add_action( 'init', 'calculogic_register_config_taxonomy' );
