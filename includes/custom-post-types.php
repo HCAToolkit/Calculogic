@@ -205,3 +205,50 @@ function calculogic_register_config_taxonomy() {
     register_taxonomy( 'calculogic_config_category', array( 'calculogic_config' ), $args );
 }
 add_action( 'init', 'calculogic_register_config_taxonomy' );
+
+// Add a Meta Box to the Types CPT for Builder Item Type
+function calculogic_add_type_meta_box() {
+    add_meta_box(
+        'calculogic_type_meta_box',
+        __( 'Builder Item Type', 'calculogic' ),
+        'calculogic_render_type_meta_box',
+        'calculogic_type',
+        'side',
+        'default'
+    );
+}
+add_action( 'add_meta_boxes', 'calculogic_add_type_meta_box' );
+
+function calculogic_render_type_meta_box( $post ) {
+    $type = get_post_meta( $post->ID, 'calculogic_item_type', true );
+    $options = array( 'calculator', 'quiz', 'template' );
+
+    echo '<select name="calculogic_item_type">';
+    foreach ( $options as $option ) {
+        $selected = ( $type === $option ) ? 'selected' : '';
+        echo '<option value="' . esc_attr( $option ) . '" ' . $selected . '>' . ucfirst( $option ) . '</option>';
+    }
+    echo '</select>';
+}
+
+function calculogic_save_type_meta_box( $post_id ) {
+    if ( isset( $_POST['calculogic_item_type'] ) ) {
+        update_post_meta( $post_id, 'calculogic_item_type', sanitize_text_field( $_POST['calculogic_item_type'] ) );
+    }
+}
+add_action( 'save_post', 'calculogic_save_type_meta_box' );
+
+// Filter Types by Builder Item Type in Admin
+function calculogic_filter_types_by_item_type( $query ) {
+    if ( is_admin() && $query->is_main_query() && $query->get( 'post_type' ) === 'calculogic_type' ) {
+        if ( isset( $_GET['calculogic_item_type'] ) && $_GET['calculogic_item_type'] ) {
+            $query->set( 'meta_query', array(
+                array(
+                    'key'   => 'calculogic_item_type',
+                    'value' => sanitize_text_field( $_GET['calculogic_item_type'] ),
+                ),
+            ) );
+        }
+    }
+}
+add_action( 'pre_get_posts', 'calculogic_filter_types_by_item_type' );
