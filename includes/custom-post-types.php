@@ -2,7 +2,8 @@
 /**
  * Custom Post Types for Calculogic
  *
- * This file registers custom post types for managing templates, quizzes, and calculators.
+ * This file registers custom post types (CPTs) and taxonomies for managing templates, quizzes, calculators,
+ * and configurations. It also includes meta boxes and filters for associating configurations with types.
  *
  * @package Calculogic
  */
@@ -12,7 +13,12 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
-// 1. Register the Configurations CPT
+/**
+ * Register the Configurations CPT
+ *
+ * This CPT is used to store reusable configurations (e.g., JSON data for field definitions, workflows, or styling).
+ * Configurations can be associated with builder items (Types CPT) via a meta box.
+ */
 function calculogic_register_config_cpt() {
     $labels = array(
         'name'                  => __( 'Calculogic Configurations', 'calculogic' ),
@@ -33,13 +39,18 @@ function calculogic_register_config_cpt() {
         'has_archive'           => true,
         'supports'              => array( 'title', 'editor' ),
         'rewrite'               => array( 'slug' => 'calculogic-config' ),
-        'show_in_rest'          => true,
+        'show_in_rest'          => true, // Enables REST API support
     );
     register_post_type( 'calculogic_config', $args );
 }
 add_action( 'init', 'calculogic_register_config_cpt' );
 
-// 2. Register the Types CPT
+/**
+ * Register the Types CPT
+ *
+ * This unified CPT is used to manage builder items such as calculators, quizzes, and templates.
+ * Each type can be associated with one or more configurations via a meta box.
+ */
 function calculogic_register_type_cpt() {
     $labels = array(
         'name'                  => __( 'Calculogic Types', 'calculogic' ),
@@ -60,39 +71,46 @@ function calculogic_register_type_cpt() {
         'has_archive'           => true,
         'supports'              => array( 'title', 'editor', 'thumbnail' ),
         'rewrite'               => array( 'slug' => 'calculogic-types' ),
-        'show_in_rest'          => true,
+        'show_in_rest'          => true, // Enables REST API support
     );
     register_post_type( 'calculogic_type', $args );
 }
 add_action( 'init', 'calculogic_register_type_cpt' );
 
-// 3. Add a Meta Box to the Types CPT to Associate Configurations
-
-// Hook to add the meta box on the 'calculogic_type' edit screen.
+/**
+ * Add a Meta Box to the Types CPT to Associate Configurations
+ *
+ * This meta box allows users to associate one or more configurations with a builder item (Types CPT).
+ */
 function calculogic_add_configurations_meta_box() {
     add_meta_box(
-        'calculogic_configurations_meta_box',         // Unique ID for the meta box.
-        __( 'Associated Configurations', 'calculogic' ), // Title displayed in the meta box.
-        'calculogic_render_configurations_meta_box',    // Callback function that renders the meta box.
-        'calculogic_type',                              // CPT where this meta box should appear.
+        'calculogic_configurations_meta_box',         // Unique ID for the meta box
+        __( 'Associated Configurations', 'calculogic' ), // Title displayed in the meta box
+        'calculogic_render_configurations_meta_box',    // Callback function that renders the meta box
+        'calculogic_type',                              // CPT where this meta box should appear
         'normal',                                       // Context: normal, side, etc.
-        'high'                                          // Priority.
+        'high'                                          // Priority
     );
 }
 add_action( 'add_meta_boxes', 'calculogic_add_configurations_meta_box' );
 
-// Render the meta box: lists all available configurations with checkboxes.
+/**
+ * Render the Configurations Meta Box
+ *
+ * This function outputs a list of all available configurations with checkboxes, allowing users to associate
+ * configurations with the current builder item.
+ */
 function calculogic_render_configurations_meta_box( $post ) {
-    // Retrieve existing configuration IDs associated with this type.
+    // Retrieve existing configuration IDs associated with this type
     $config_ids = get_post_meta( $post->ID, 'calculogic_config_ids', true );
     if ( ! is_array( $config_ids ) ) {
         $config_ids = array();
     }
 
-    // Output a nonce field for security.
+    // Output a nonce field for security
     wp_nonce_field( 'calculogic_save_configurations_meta_box', 'calculogic_meta_box_nonce' );
 
-    // Query all published configurations.
+    // Query all published configurations
     $config_query = new WP_Query( array(
         'post_type'      => 'calculogic_config',
         'posts_per_page' => -1,
@@ -106,7 +124,7 @@ function calculogic_render_configurations_meta_box( $post ) {
             $config_query->the_post();
             $id    = get_the_ID();
             $title = get_the_title();
-            // Check if this configuration is already associated.
+            // Check if this configuration is already associated
             $checked = in_array( $id, $config_ids ) ? 'checked="checked"' : '';
             echo '<label style="display:block;">';
             echo '<input type="checkbox" name="calculogic_config_ids[]" value="' . esc_attr( $id ) . '" ' . $checked . '> ' . esc_html( $title );
@@ -118,37 +136,39 @@ function calculogic_render_configurations_meta_box( $post ) {
     }
 }
 
-// 4. Save the Meta Box Data
+/**
+ * Save the Configurations Meta Box Data
+ *
+ * This function saves the selected configuration IDs to the post meta for the current builder item.
+ */
 function calculogic_save_configurations_meta_box( $post_id ) {
-    // Verify the nonce before proceeding.
+    // Verify the nonce before proceeding
     if ( ! isset( $_POST['calculogic_meta_box_nonce'] ) ||
          ! wp_verify_nonce( $_POST['calculogic_meta_box_nonce'], 'calculogic_save_configurations_meta_box' ) ) {
         return;
     }
 
-    // Avoid interfering with autosave.
+    // Avoid interfering with autosave
     if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
         return;
     }
 
-    // Check the user's permissions.
+    // Check the user's permissions
     if ( ! current_user_can( 'edit_post', $post_id ) ) {
         return;
     }
 
-    // Sanitize and update the meta field with the selected configuration IDs.
+    // Sanitize and update the meta field with the selected configuration IDs
     $config_ids = isset( $_POST['calculogic_config_ids'] ) ? array_map( 'intval', $_POST['calculogic_config_ids'] ) : array();
     update_post_meta( $post_id, 'calculogic_config_ids', $config_ids );
 }
 add_action( 'save_post', 'calculogic_save_configurations_meta_box' );
 
-/*
- * Future considerations:
- * - Versioning: Consider including a version field within your configuration JSON.
- * - Migrations: Write migration functions that update older configurations to the latest schema.
- * - Export/Transformation: With unified JSON, you can later build a transformation layer to export this configuration to other programming languages or formats.
+/**
+ * Register Taxonomy for Calculogic Types
+ *
+ * This taxonomy allows users to categorize builder items (Types CPT) for better organization and filtering.
  */
-// Register Taxonomy for Calculogic Types
 function calculogic_register_type_taxonomy() {
     $labels = array(
         'name'              => _x( 'Type Categories', 'taxonomy general name', 'calculogic' ),
@@ -165,7 +185,7 @@ function calculogic_register_type_taxonomy() {
     );
 
     $args = array(
-        'hierarchical'      => true, // works like categories
+        'hierarchical'      => true, // Works like categories
         'labels'            => $labels,
         'show_ui'           => true,
         'show_admin_column' => true,
@@ -177,7 +197,11 @@ function calculogic_register_type_taxonomy() {
 }
 add_action( 'init', 'calculogic_register_type_taxonomy' );
 
-// Register Taxonomy for Calculogic Configurations
+/**
+ * Register Taxonomy for Calculogic Configurations
+ *
+ * This taxonomy allows users to categorize configurations for better organization and filtering.
+ */
 function calculogic_register_config_taxonomy() {
     $labels = array(
         'name'              => _x( 'Configuration Categories', 'taxonomy general name', 'calculogic' ),
@@ -194,7 +218,7 @@ function calculogic_register_config_taxonomy() {
     );
 
     $args = array(
-        'hierarchical'      => true, // works like categories
+        'hierarchical'      => true, // Works like categories
         'labels'            => $labels,
         'show_ui'           => true,
         'show_admin_column' => true,
@@ -205,7 +229,6 @@ function calculogic_register_config_taxonomy() {
     register_taxonomy( 'calculogic_config_category', array( 'calculogic_config' ), $args );
 }
 add_action( 'init', 'calculogic_register_config_taxonomy' );
-
 // Add a Meta Box to the Types CPT for Builder Item Type
 function calculogic_add_type_meta_box() {
     add_meta_box(

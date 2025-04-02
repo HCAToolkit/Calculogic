@@ -1,53 +1,61 @@
 /* 
  * Calculogic Plugin Styles
  * This file contains the CSS styles for the Calculogic plugin's front-end interface.
+ * It includes styles for the dashboard, buttons, headers, and placeholders.
+ * These styles ensure a clean and user-friendly design for the plugin's UI.
  */
 
 /* General styles */
+/* These styles apply to the overall page to ensure consistent typography and background color */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    color: #333;
+    font-family: Arial, sans-serif; /* Use a clean, sans-serif font for readability */
+    background-color: #f9f9f9; /* Light gray background for a modern look */
+    color: #333; /* Dark gray text for good contrast */
 }
 
 /* Dashboard styles */
+/* Styles for the main Calculogic dashboard container */
 #calculogic-dashboard {
-    padding: 20px;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px; /* Add padding inside the container for spacing */
+    background-color: #fff; /* White background for a clean, card-like appearance */
+    border: 1px solid #ddd; /* Light gray border to define the container */
+    border-radius: 5px; /* Rounded corners for a modern design */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
 }
 
 /* Button styles */
+/* Styles for buttons used in the Calculogic dashboard */
 .calculogic-controls button {
-    background-color: #0073aa;
-    color: #fff;
-    border: none;
-    border-radius: 3px;
-    padding: 10px 15px;
-    cursor: pointer;
-    margin-right: 10px;
-    transition: background-color 0.3s;
+    background-color: #0073aa; /* WordPress blue for consistency with the admin UI */
+    color: #fff; /* White text for contrast */
+    border: none; /* Remove default button borders */
+    border-radius: 3px; /* Slightly rounded corners for a modern look */
+    padding: 10px 15px; /* Add padding for a clickable button size */
+    cursor: pointer; /* Pointer cursor to indicate interactivity */
+    margin-right: 10px; /* Add spacing between buttons */
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
 }
 
+/* Hover effect for buttons */
 .calculogic-controls button:hover {
-    background-color: #005177;
+    background-color: #005177; /* Darker blue on hover for visual feedback */
 }
 
 /* Header styles */
+/* Styles for headers used in the dashboard */
 h2 {
-    font-size: 24px;
-    margin-bottom: 15px;
+    font-size: 24px; /* Larger font size for section titles */
+    margin-bottom: 15px; /* Add spacing below the header */
 }
 
 /* Placeholder styles */
+/* Styles for the placeholder area in the builder interface */
 #calculogic-builder {
-    min-height: 300px;
-    border: 1px dashed #ccc;
-    margin-top: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #aaa;
+    min-height: 300px; /* Ensure the builder area has a minimum height */
+    border: 1px dashed #ccc; /* Dashed border to indicate a placeholder area */
+    margin-top: 20px; /* Add spacing above the builder area */
+    display: flex; /* Use flexbox for centering content */
+    align-items: center; /* Vertically center content */
+    justify-content: center; /* Horizontally center content */
+    color: #aaa; /* Light gray text for placeholder content */
 }
