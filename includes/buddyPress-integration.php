@@ -60,38 +60,44 @@ function calculogic_dashboard_screen() {
  * and controls for managing templates, quizzes, and collaborators.
  */
 function calculogic_dashboard_content() {
-    // Display role-based messaging
-    if ( current_user_can( 'manage_options' ) ) {
-        echo '<h2>Administrator Dashboard</h2>';
-        echo '<p>You can manage and save official Calculogic forms/quizzes from here.</p>';
-    } else {
-        echo '<h2>User Dashboard</h2>';
-        echo '<p>Create and manage your personal templates and quizzes here.</p>';
+    $current_user_id = get_current_user_id();
+    $post_types = array( 'calculator', 'quiz', 'template' );
+
+    echo '<h2>' . __( 'Your Calculogic Items', 'calculogic' ) . '</h2>';
+    echo '<button id="calculogic-create-new" type="button">' . __( 'Create New Item', 'calculogic' ) . '</button>';
+    echo '<div id="calculogic-dashboard">';
+
+    foreach ( $post_types as $post_type ) {
+        $posts = get_posts( array(
+            'post_type'   => $post_type,
+            'author'      => $current_user_id,
+            'post_status' => 'publish',
+            'numberposts' => -1,
+        ) );
+
+        if ( ! empty( $posts ) ) {
+            echo '<h3>' . ucfirst( $post_type ) . 's</h3>';
+            echo '<table class="calculogic-table">';
+            echo '<thead><tr><th>' . __( 'Title', 'calculogic' ) . '</th><th>' . __( 'Actions', 'calculogic' ) . '</th></tr></thead>';
+            echo '<tbody>';
+            foreach ( $posts as $post ) {
+                echo '<tr>';
+                echo '<td>' . esc_html( $post->post_title ) . '</td>';
+                echo '<td>';
+                echo '<button class="calculogic-edit" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Edit', 'calculogic' ) . '</button>';
+                echo '<button class="calculogic-quick-edit" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Quick Edit', 'calculogic' ) . '</button>';
+                echo '<button class="calculogic-duplicate" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Duplicate', 'calculogic' ) . '</button>';
+                echo '<button class="calculogic-delete" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Delete', 'calculogic' ) . '</button>';
+                echo '</td>';
+                echo '</tr>';
+            }
+            echo '</tbody>';
+            echo '</table>';
+        } else {
+            echo '<p>' . sprintf( __( 'No %s found.', 'calculogic' ), $post_type ) . '</p>';
+        }
     }
 
-    // Dashboard container – the builder UI will be rendered here
-    echo '<div id="calculogic-dashboard">';
-        // Search and filter controls
-        echo '<div class="calculogic-search-filter">';
-            echo '<input type="text" id="calculogic-search" placeholder="' . __( 'Search items...', 'calculogic' ) . '">';
-            echo '<select id="calculogic-filter">';
-                echo '<option value="all">' . __( 'All Types', 'calculogic' ) . '</option>';
-                echo '<option value="calculator">' . __( 'Calculators', 'calculogic' ) . '</option>';
-                echo '<option value="quiz">' . __( 'Quizzes', 'calculogic' ) . '</option>';
-                echo '<option value="template">' . __( 'Templates', 'calculogic' ) . '</option>';
-            echo '</select>';
-        echo '</div>';
-
-        // Placeholder container – items will be dynamically loaded here
-        echo '<div id="calculogic-items"></div>';
-
-        // Controls: buttons for New, Duplicate, Delete, Assign Collaborator
-        echo '<div class="calculogic-controls">';
-            echo '<button id="calculogic-new" type="button">' . __( 'New Template/Quiz', 'calculogic' ) . '</button>';
-            echo '<button id="calculogic-duplicate" type="button">' . __( 'Duplicate', 'calculogic' ) . '</button>';
-            echo '<button id="calculogic-delete" type="button">' . __( 'Delete', 'calculogic' ) . '</button>';
-            echo '<button id="calculogic-collaborators" type="button">' . __( 'Collaborator Settings', 'calculogic' ) . '</button>';
-        echo '</div>';
     echo '</div>';
 
     // Inline JavaScript for dynamic functionality
@@ -99,57 +105,122 @@ function calculogic_dashboard_content() {
     <script type="text/javascript">
     (function($) {
         $(document).ready(function() {
-            // Load items dynamically
-            function loadItems(search = '', filter = 'all') {
-                $.ajax({
-                    url: ajaxurl,
-                    method: 'POST',
-                    data: {
-                        action: 'load_calculogic_items',
-                        search: search,
-                        filter: filter
-                    },
-                    success: function(response) {
-                        $('#calculogic-items').html(response);
-                    },
-                    error: function() {
-                        alert('<?php echo __( "Error loading items. Please try again.", "calculogic" ); ?>');
-                    }
-                });
-            }
+            // Create new item
+            $('#calculogic-create-new').on('click', function() {
+                const title = prompt('<?php echo __( "Enter the title for the new item:", "calculogic" ); ?>');
+                const type = prompt('<?php echo __( "Enter the type (calculator, quiz, template):", "calculogic" ); ?>');
 
-            // Initialize items on page load
-            loadItems();
-
-            // Search functionality
-            $('#calculogic-search').on('input', function() {
-                const search = $(this).val();
-                const filter = $('#calculogic-filter').val();
-                loadItems(search, filter);
+                if (title && type) {
+                    $.ajax({
+                        url: ajaxurl,
+                        method: 'POST',
+                        data: {
+                            action: 'create_calculogic_item',
+                            nonce: calculogic_nonce,
+                            title: title,
+                            type: type
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                alert('<?php echo __( "Item created successfully!", "calculogic" ); ?>');
+                                location.reload();
+                            } else {
+                                alert(response.data || '<?php echo __( "Failed to create item.", "calculogic" ); ?>');
+                            }
+                        },
+                        error: function() {
+                            alert('<?php echo __( "Error creating item. Please try again.", "calculogic" ); ?>');
+                        }
+                    });
+                }
             });
 
-            // Filter functionality
-            $('#calculogic-filter').on('change', function() {
-                const search = $('#calculogic-search').val();
-                const filter = $(this).val();
-                loadItems(search, filter);
+            // Edit, Quick Edit, Duplicate, Delete functionality
+            $('.calculogic-edit').on('click', function() {
+                const id = $(this).data('id');
+                window.location.href = '<?php echo admin_url( "post.php?action=edit&post=" ); ?>' + id;
             });
 
-            // Event listeners for buttons
-            $('#calculogic-new').on('click', function() {
-                alert('<?php echo __( "New builder initiated.", "calculogic" ); ?>');
+            $('.calculogic-quick-edit').on('click', function() {
+                const id = $(this).data('id');
+                const newTitle = prompt('<?php echo __( "Enter the new title:", "calculogic" ); ?>');
+                if (newTitle) {
+                    $.ajax({
+                        url: ajaxurl,
+                        method: 'POST',
+                        data: {
+                            action: 'update_calculogic_item',
+                            nonce: calculogic_nonce,
+                            id: id,
+                            title: newTitle
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                alert('<?php echo __( "Item updated successfully!", "calculogic" ); ?>');
+                                location.reload();
+                            } else {
+                                alert(response.data || '<?php echo __( "Failed to update item.", "calculogic" ); ?>');
+                            }
+                        },
+                        error: function() {
+                            alert('<?php echo __( "Error updating item. Please try again.", "calculogic" ); ?>');
+                        }
+                    });
+                }
             });
 
-            $('#calculogic-duplicate').on('click', function() {
-                alert('<?php echo __( "Duplicate functionality goes here.", "calculogic" ); ?>');
+            $('.calculogic-duplicate').on('click', function() {
+                const id = $(this).data('id');
+                const newTitle = prompt('<?php echo __( "Enter the title for the duplicated item:", "calculogic" ); ?>');
+                if (newTitle) {
+                    $.ajax({
+                        url: ajaxurl,
+                        method: 'POST',
+                        data: {
+                            action: 'duplicate_calculogic_item',
+                            nonce: calculogic_nonce,
+                            id: id,
+                            title: newTitle
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                alert('<?php echo __( "Item duplicated successfully!", "calculogic" ); ?>');
+                                location.reload();
+                            } else {
+                                alert(response.data || '<?php echo __( "Failed to duplicate item.", "calculogic" ); ?>');
+                            }
+                        },
+                        error: function() {
+                            alert('<?php echo __( "Error duplicating item. Please try again.", "calculogic" ); ?>');
+                        }
+                    });
+                }
             });
 
-            $('#calculogic-delete').on('click', function() {
-                alert('<?php echo __( "Delete functionality goes here.", "calculogic" ); ?>');
-            });
-
-            $('#calculogic-collaborators').on('click', function() {
-                alert('<?php echo __( "Open collaborator settings.", "calculogic" ); ?>');
+            $('.calculogic-delete').on('click', function() {
+                const id = $(this).data('id');
+                if (confirm('<?php echo __( "Are you sure you want to delete this item?", "calculogic" ); ?>')) {
+                    $.ajax({
+                        url: ajaxurl,
+                        method: 'POST',
+                        data: {
+                            action: 'delete_calculogic_item',
+                            nonce: calculogic_nonce,
+                            id: id
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                alert('<?php echo __( "Item deleted successfully!", "calculogic" ); ?>');
+                                location.reload();
+                            } else {
+                                alert(response.data || '<?php echo __( "Failed to delete item.", "calculogic" ); ?>');
+                            }
+                        },
+                        error: function() {
+                            alert('<?php echo __( "Error deleting item. Please try again.", "calculogic" ); ?>');
+                        }
+                    });
+                }
             });
         });
     })(jQuery);
