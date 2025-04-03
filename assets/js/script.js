@@ -64,34 +64,130 @@ jQuery(document).ready(function($) {
     /**
      * Event Listener: Create New Item
      *
-     * Triggered when the "New" button is clicked. This launches the builder in "new" mode,
-     * allowing the user to create a new template, quiz, or calculator.
+     * Triggered when the "New" button is clicked. Sends an AJAX request to create a new item.
      */
     $('#calculogic-new').on('click', function() {
-        alert('New builder initiated.');
-        // Additional logic to create a new item can be added here
+        const title = prompt('Enter the title for the new item:');
+        const type = prompt('Enter the type (calculator, quiz, template):');
+
+        if (title && type) {
+            $.ajax({
+                url: ajaxurl,
+                method: 'POST',
+                data: {
+                    action: 'create_calculogic_item',
+                    nonce: calculogic_nonce,
+                    title: title,
+                    type: type
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Item created successfully!');
+                        loadItems(); // Reload items
+                    } else {
+                        alert(response.data || 'Failed to create item.');
+                    }
+                },
+                error: function() {
+                    alert('Error creating item. Please try again.');
+                }
+            });
+        }
     });
 
     /**
-     * Event Listener: Duplicate Item
+     * Event Listener: Read Item
      *
-     * Triggered when the "Duplicate" button is clicked. This duplicates an existing item
-     * and adds it to the builder interface.
+     * Triggered when an item is clicked. Sends an AJAX request to fetch the item details.
+     */
+    $(document).on('click', '.calculogic-item', function() {
+        const itemId = $(this).data('id');
+
+        $.ajax({
+            url: ajaxurl,
+            method: 'POST',
+            data: {
+                action: 'read_calculogic_item',
+                nonce: calculogic_nonce,
+                id: itemId
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert(`Title: ${response.data.title}\nContent: ${response.data.content}`);
+                } else {
+                    alert(response.data || 'Failed to fetch item details.');
+                }
+            },
+            error: function() {
+                alert('Error fetching item details. Please try again.');
+            }
+        });
+    });
+
+    /**
+     * Event Listener: Update Item
+     *
+     * Triggered when the "Duplicate" button is clicked. Sends an AJAX request to update an item.
      */
     $('#calculogic-duplicate').on('click', function() {
-        alert('Duplicate functionality goes here.');
-        // Additional logic to duplicate an item can be added here
+        const itemId = prompt('Enter the ID of the item to duplicate:');
+        const newTitle = prompt('Enter the new title for the duplicated item:');
+
+        if (itemId && newTitle) {
+            $.ajax({
+                url: ajaxurl,
+                method: 'POST',
+                data: {
+                    action: 'update_calculogic_item',
+                    nonce: calculogic_nonce,
+                    id: itemId,
+                    title: newTitle
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Item updated successfully!');
+                        loadItems(); // Reload items
+                    } else {
+                        alert(response.data || 'Failed to update item.');
+                    }
+                },
+                error: function() {
+                    alert('Error updating item. Please try again.');
+                }
+            });
+        }
     });
 
     /**
      * Event Listener: Delete Item
      *
-     * Triggered when the "Delete" button is clicked. This deletes an existing item
-     * from the builder interface and the database.
+     * Triggered when the "Delete" button is clicked. Sends an AJAX request to delete an item.
      */
     $('#calculogic-delete').on('click', function() {
-        alert('Delete functionality goes here.');
-        // Additional logic to delete an item can be added here
+        const itemId = prompt('Enter the ID of the item to delete:');
+
+        if (itemId) {
+            $.ajax({
+                url: ajaxurl,
+                method: 'POST',
+                data: {
+                    action: 'delete_calculogic_item',
+                    nonce: calculogic_nonce,
+                    id: itemId
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Item deleted successfully!');
+                        loadItems(); // Reload items
+                    } else {
+                        alert(response.data || 'Failed to delete item.');
+                    }
+                },
+                error: function() {
+                    alert('Error deleting item. Please try again.');
+                }
+            });
+        }
     });
 
     /**
