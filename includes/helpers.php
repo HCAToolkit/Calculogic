@@ -76,4 +76,109 @@ function calculogic_load_items() {
 }
 add_action('wp_ajax_load_calculogic_items', 'calculogic_load_items');
 add_action('wp_ajax_nopriv_load_calculogic_items', 'calculogic_load_items');
+
+/**
+ * AJAX handler to create a new item.
+ */
+function calculogic_create_item() {
+    // Verify nonce for security
+    check_ajax_referer( 'calculogic_nonce', 'nonce' );
+
+    $title = isset( $_POST['title'] ) ? sanitize_text_field( $_POST['title'] ) : '';
+    $type = isset( $_POST['type'] ) ? sanitize_text_field( $_POST['type'] ) : '';
+
+    if ( empty( $title ) || empty( $type ) ) {
+        wp_send_json_error( __( 'Title and type are required.', 'calculogic' ) );
+    }
+
+    $post_id = wp_insert_post( array(
+        'post_title'  => $title,
+        'post_type'   => $type,
+        'post_status' => 'publish',
+    ) );
+
+    if ( is_wp_error( $post_id ) ) {
+        wp_send_json_error( __( 'Failed to create item.', 'calculogic' ) );
+    }
+
+    wp_send_json_success( array( 'id' => $post_id, 'title' => $title ) );
+}
+add_action( 'wp_ajax_create_calculogic_item', 'calculogic_create_item' );
+
+/**
+ * AJAX handler to update an item.
+ */
+function calculogic_update_item() {
+    // Verify nonce for security
+    check_ajax_referer( 'calculogic_nonce', 'nonce' );
+
+    $post_id = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : 0;
+    $title = isset( $_POST['title'] ) ? sanitize_text_field( $_POST['title'] ) : '';
+
+    if ( empty( $post_id ) || empty( $title ) ) {
+        wp_send_json_error( __( 'ID and title are required.', 'calculogic' ) );
+    }
+
+    $updated = wp_update_post( array(
+        'ID'         => $post_id,
+        'post_title' => $title,
+    ) );
+
+    if ( is_wp_error( $updated ) || $updated === 0 ) {
+        wp_send_json_error( __( 'Failed to update item.', 'calculogic' ) );
+    }
+
+    wp_send_json_success( array( 'id' => $post_id, 'title' => $title ) );
+}
+add_action( 'wp_ajax_update_calculogic_item', 'calculogic_update_item' );
+
+/**
+ * AJAX handler to delete an item.
+ */
+function calculogic_delete_item() {
+    // Verify nonce for security
+    check_ajax_referer( 'calculogic_nonce', 'nonce' );
+
+    $post_id = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : 0;
+
+    if ( empty( $post_id ) ) {
+        wp_send_json_error( __( 'ID is required.', 'calculogic' ) );
+    }
+
+    $deleted = wp_delete_post( $post_id, true );
+
+    if ( ! $deleted ) {
+        wp_send_json_error( __( 'Failed to delete item.', 'calculogic' ) );
+    }
+
+    wp_send_json_success( array( 'id' => $post_id ) );
+}
+add_action( 'wp_ajax_delete_calculogic_item', 'calculogic_delete_item' );
+
+/**
+ * AJAX handler to read an item.
+ */
+function calculogic_read_item() {
+    // Verify nonce for security
+    check_ajax_referer( 'calculogic_nonce', 'nonce' );
+
+    $post_id = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : 0;
+
+    if ( empty( $post_id ) ) {
+        wp_send_json_error( __( 'ID is required.', 'calculogic' ) );
+    }
+
+    $post = get_post( $post_id );
+
+    if ( ! $post || $post->post_status !== 'publish' ) {
+        wp_send_json_error( __( 'Item not found.', 'calculogic' ) );
+    }
+
+    wp_send_json_success( array(
+        'id'      => $post->ID,
+        'title'   => $post->post_title,
+        'content' => $post->post_content,
+    ) );
+}
+add_action( 'wp_ajax_read_calculogic_item', 'calculogic_read_item' );
 ?>
