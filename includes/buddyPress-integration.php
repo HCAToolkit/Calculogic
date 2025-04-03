@@ -4,8 +4,7 @@
  *
  * This file contains the code to integrate Calculogic with BuddyPress.
  * It adds a new tab to the BuddyPress profile for users to access their
- * Calculogic dashboard. The dashboard allows users to manage templates,
- * quizzes, and other builder items.
+ * Calculogic dashboard. The dashboard allows users to manage builder items.
  *
  * @package Calculogic
  */
@@ -61,41 +60,57 @@ function calculogic_dashboard_screen() {
  */
 function calculogic_dashboard_content() {
     $current_user_id = get_current_user_id();
-    $post_types = array( 'calculator', 'quiz', 'template' );
+    $filter = isset( $_GET['filter'] ) ? sanitize_text_field( $_GET['filter'] ) : 'all';
 
     echo '<h2>' . __( 'Your Calculogic Items', 'calculogic' ) . '</h2>';
     echo '<button id="calculogic-create-new" type="button">' . __( 'Create New Item', 'calculogic' ) . '</button>';
+    echo '<div class="calculogic-filters">';
+    echo '<a href="?filter=all">' . __( 'All', 'calculogic' ) . '</a> | ';
+    echo '<a href="?filter=template">' . __( 'Templates', 'calculogic' ) . '</a> | ';
+    echo '<a href="?filter=calculator">' . __( 'Calculators', 'calculogic' ) . '</a> | ';
+    echo '<a href="?filter=quiz">' . __( 'Quizzes', 'calculogic' ) . '</a>';
+    echo '</div>';
     echo '<div id="calculogic-dashboard">';
 
-    foreach ( $post_types as $post_type ) {
-        $posts = get_posts( array(
-            'post_type'   => $post_type,
-            'author'      => $current_user_id,
-            'post_status' => 'publish',
-            'numberposts' => -1,
-        ) );
+    $args = array(
+        'post_type'   => 'calculogic_type',
+        'author'      => $current_user_id,
+        'post_status' => 'publish',
+        'numberposts' => -1,
+    );
 
-        if ( ! empty( $posts ) ) {
-            echo '<h3>' . ucfirst( $post_type ) . 's</h3>';
-            echo '<table class="calculogic-table">';
-            echo '<thead><tr><th>' . __( 'Title', 'calculogic' ) . '</th><th>' . __( 'Actions', 'calculogic' ) . '</th></tr></thead>';
-            echo '<tbody>';
-            foreach ( $posts as $post ) {
-                echo '<tr>';
-                echo '<td>' . esc_html( $post->post_title ) . '</td>';
-                echo '<td>';
-                echo '<button class="calculogic-edit" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Edit', 'calculogic' ) . '</button>';
-                echo '<button class="calculogic-quick-edit" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Quick Edit', 'calculogic' ) . '</button>';
-                echo '<button class="calculogic-duplicate" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Duplicate', 'calculogic' ) . '</button>';
-                echo '<button class="calculogic-delete" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Delete', 'calculogic' ) . '</button>';
-                echo '</td>';
-                echo '</tr>';
-            }
-            echo '</tbody>';
-            echo '</table>';
-        } else {
-            echo '<p>' . sprintf( __( 'No %s found.', 'calculogic' ), $post_type ) . '</p>';
+    if ( $filter !== 'all' ) {
+        $args['meta_query'] = array(
+            array(
+                'key'   => 'calculogic_item_type',
+                'value' => $filter,
+            ),
+        );
+    }
+
+    $posts = get_posts( $args );
+
+    if ( ! empty( $posts ) ) {
+        echo '<table class="calculogic-table">';
+        echo '<thead><tr><th>' . __( 'Title', 'calculogic' ) . '</th><th>' . __( 'Type', 'calculogic' ) . '</th><th>' . __( 'Actions', 'calculogic' ) . '</th></tr></thead>';
+        echo '<tbody>';
+        foreach ( $posts as $post ) {
+            $item_type = get_post_meta( $post->ID, 'calculogic_item_type', true );
+            echo '<tr>';
+            echo '<td>' . esc_html( $post->post_title ) . '</td>';
+            echo '<td>' . ucfirst( esc_html( $item_type ) ) . '</td>';
+            echo '<td>';
+            echo '<button class="calculogic-edit" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Edit', 'calculogic' ) . '</button>';
+            echo '<button class="calculogic-quick-edit" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Quick Edit', 'calculogic' ) . '</button>';
+            echo '<button class="calculogic-duplicate" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Duplicate', 'calculogic' ) . '</button>';
+            echo '<button class="calculogic-delete" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Delete', 'calculogic' ) . '</button>';
+            echo '</td>';
+            echo '</tr>';
         }
+        echo '</tbody>';
+        echo '</table>';
+    } else {
+        echo '<p>' . __( 'No items found.', 'calculogic' ) . '</p>';
     }
 
     echo '</div>';
