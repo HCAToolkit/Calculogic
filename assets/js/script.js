@@ -8,28 +8,19 @@
 
 jQuery(document).ready(function($) {
     /**
-     * Initialize the Calculogic Builder UI
-     *
-     * This function sets up the builder interface by loading existing items (templates, quizzes, calculators)
-     * and attaching event listeners to the builder controls.
-     */
-    function initBuilder() {
-        // Load existing items via an AJAX call
-        loadItems();
-    }
-
-    /**
      * Load Items via AJAX
      *
      * This function sends an AJAX request to the WordPress backend to fetch existing builder items.
      * The response is dynamically inserted into the builder interface.
      */
-    function loadItems() {
+    function loadItems(search = '', filter = 'all') {
         $.ajax({
             url: ajaxurl, // WordPress-provided global variable for AJAX requests
             method: 'POST', // HTTP method for the request
             data: {
-                action: 'load_calculogic_items' // Custom action to handle the request in PHP
+                action: 'load_calculogic_items', // Custom action to handle the request in PHP
+                search: search,
+                filter: filter
             },
             success: function(response) {
                 // Handle successful response
@@ -43,6 +34,33 @@ jQuery(document).ready(function($) {
         });
     }
 
+    // Initialize items on page load
+    loadItems();
+
+    /**
+     * Event Listener: Search Functionality
+     *
+     * Triggered when the user types in the search input field. This filters the builder items
+     * based on the search query and selected filter.
+     */
+    $('#calculogic-search').on('input', function() {
+        const search = $(this).val();
+        const filter = $('#calculogic-filter').val();
+        loadItems(search, filter);
+    });
+
+    /**
+     * Event Listener: Filter Functionality
+     *
+     * Triggered when the user selects a filter option. This filters the builder items
+     * based on the selected filter and search query.
+     */
+    $('#calculogic-filter').on('change', function() {
+        const search = $('#calculogic-search').val();
+        const filter = $(this).val();
+        loadItems(search, filter);
+    });
+
     /**
      * Event Listener: Create New Item
      *
@@ -50,7 +68,7 @@ jQuery(document).ready(function($) {
      * allowing the user to create a new template, quiz, or calculator.
      */
     $('#calculogic-new').on('click', function() {
-        alert("New builder initiated.");
+        alert('New builder initiated.');
         // Additional logic to create a new item can be added here
     });
 
@@ -61,7 +79,7 @@ jQuery(document).ready(function($) {
      * and adds it to the builder interface.
      */
     $('#calculogic-duplicate').on('click', function() {
-        alert("Duplicate functionality goes here.");
+        alert('Duplicate functionality goes here.');
         // Additional logic to duplicate an item can be added here
     });
 
@@ -72,7 +90,7 @@ jQuery(document).ready(function($) {
      * from the builder interface and the database.
      */
     $('#calculogic-delete').on('click', function() {
-        alert("Delete functionality goes here.");
+        alert('Delete functionality goes here.');
         // Additional logic to delete an item can be added here
     });
 
@@ -83,10 +101,7 @@ jQuery(document).ready(function($) {
      * to manage collaborators for the selected item.
      */
     $('#calculogic-collaborators').on('click', function() {
-        alert("Open collaborator settings.");
+        alert('Open collaborator settings.');
         // Additional logic to manage collaborators can be added here
     });
-
-    // Initialize the builder on document ready
-    initBuilder();
 });

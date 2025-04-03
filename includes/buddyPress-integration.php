@@ -71,8 +71,19 @@ function calculogic_dashboard_content() {
 
     // Dashboard container – the builder UI will be rendered here
     echo '<div id="calculogic-dashboard">';
-        // Placeholder container – your JavaScript will load the builder UI
-        echo '<div id="calculogic-builder"></div>';
+        // Search and filter controls
+        echo '<div class="calculogic-search-filter">';
+            echo '<input type="text" id="calculogic-search" placeholder="' . __( 'Search items...', 'calculogic' ) . '">';
+            echo '<select id="calculogic-filter">';
+                echo '<option value="all">' . __( 'All Types', 'calculogic' ) . '</option>';
+                echo '<option value="calculator">' . __( 'Calculators', 'calculogic' ) . '</option>';
+                echo '<option value="quiz">' . __( 'Quizzes', 'calculogic' ) . '</option>';
+                echo '<option value="template">' . __( 'Templates', 'calculogic' ) . '</option>';
+            echo '</select>';
+        echo '</div>';
+
+        // Placeholder container – items will be dynamically loaded here
+        echo '<div id="calculogic-items"></div>';
 
         // Controls: buttons for New, Duplicate, Delete, Assign Collaborator
         echo '<div class="calculogic-controls">';
@@ -83,29 +94,62 @@ function calculogic_dashboard_content() {
         echo '</div>';
     echo '</div>';
 
-    // Inline JavaScript for button functionality
+    // Inline JavaScript for dynamic functionality
     ?>
     <script type="text/javascript">
     (function($) {
         $(document).ready(function() {
-            // Event listener for the "New" button
+            // Load items dynamically
+            function loadItems(search = '', filter = 'all') {
+                $.ajax({
+                    url: ajaxurl,
+                    method: 'POST',
+                    data: {
+                        action: 'load_calculogic_items',
+                        search: search,
+                        filter: filter
+                    },
+                    success: function(response) {
+                        $('#calculogic-items').html(response);
+                    },
+                    error: function() {
+                        alert('<?php echo __( "Error loading items. Please try again.", "calculogic" ); ?>');
+                    }
+                });
+            }
+
+            // Initialize items on page load
+            loadItems();
+
+            // Search functionality
+            $('#calculogic-search').on('input', function() {
+                const search = $(this).val();
+                const filter = $('#calculogic-filter').val();
+                loadItems(search, filter);
+            });
+
+            // Filter functionality
+            $('#calculogic-filter').on('change', function() {
+                const search = $('#calculogic-search').val();
+                const filter = $(this).val();
+                loadItems(search, filter);
+            });
+
+            // Event listeners for buttons
             $('#calculogic-new').on('click', function() {
-                alert("New builder initiated.");
+                alert('<?php echo __( "New builder initiated.", "calculogic" ); ?>');
             });
 
-            // Event listener for the "Duplicate" button
             $('#calculogic-duplicate').on('click', function() {
-                alert("Duplicate functionality goes here.");
+                alert('<?php echo __( "Duplicate functionality goes here.", "calculogic" ); ?>');
             });
 
-            // Event listener for the "Delete" button
             $('#calculogic-delete').on('click', function() {
-                alert("Delete functionality goes here.");
+                alert('<?php echo __( "Delete functionality goes here.", "calculogic" ); ?>');
             });
 
-            // Event listener for the "Collaborators" button
             $('#calculogic-collaborators').on('click', function() {
-                alert("Open collaborator settings.");
+                alert('<?php echo __( "Open collaborator settings.", "calculogic" ); ?>');
             });
         });
     })(jQuery);
