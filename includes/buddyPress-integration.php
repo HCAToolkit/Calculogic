@@ -25,7 +25,7 @@ if ( function_exists( 'bp_core_new_nav_item' ) ) {
             bp_core_new_nav_item( array(
                 'name'                    => __( 'Calculogic Dashboard', 'calculogic' ), // Tab name
                 'slug'                    => 'calculogic-dashboard', // URL slug for the tab
-                'default_subnav_slug'     => 'calculogic-dashboard', // Default sub-tab slug
+                'default_subnav_slug'     => 'type-tab', // Default sub-tab slug
                 'position'                => 40, // Position in the navigation menu
                 'show_for_displayed_user' => true, // Only show for the profile owner
                 'screen_function'         => 'calculogic_dashboard_screen', // Callback for tab content
@@ -44,26 +44,37 @@ if ( function_exists( 'bp_core_new_nav_item' ) ) {
  * the appropriate template for rendering.
  */
 function calculogic_dashboard_screen() {
-    // Hook the dashboard content into the BuddyPress template content hook
-    add_action( 'bp_template_content', 'calculogic_dashboard_content' );
+    $current_tab = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : 'type-tab';
+
+    switch ( $current_tab ) {
+        case 'configurations-tab':
+            add_action( 'bp_template_content', 'calculogic_configurations_tab_content' );
+            break;
+        case 'narrative-tab':
+            add_action( 'bp_template_content', 'calculogic_narrative_tab_content' );
+            break;
+        default:
+            add_action( 'bp_template_content', 'calculogic_type_tab_content' );
+            break;
+    }
 
     // Load the BuddyPress template for custom plugins
     bp_core_load_template( apply_filters( 'bp_core_template_plugin', 'members/single/plugins' ) );
 }
 
 /**
- * Dashboard Content Function
+ * Type Tab Content
  *
  * This function outputs the content for the Calculogic Dashboard tab.
  * It includes role-based messaging, a placeholder for the builder UI,
  * and controls for managing templates, quizzes, and collaborators.
  */
-function calculogic_dashboard_content() {
+function calculogic_type_tab_content() {
     $current_user_id = get_current_user_id();
     $filter = isset( $_GET['filter'] ) ? sanitize_text_field( $_GET['filter'] ) : 'all';
 
     echo '<h2>' . __( 'Your Calculogic Items', 'calculogic' ) . '</h2>';
-    echo '<button id="calculogic-create-new" type="button">' . __( 'Create New Item', 'calculogic' ) . '</button>';
+    echo '<button id="calculogic-create-new" type="button" onclick="window.location.href=\'' . admin_url( 'admin.php?page=calculogic-builder' ) . '\'">' . __( 'Create New Item', 'calculogic' ) . '</button>';
     echo '<div class="calculogic-filters">';
     echo '<a href="?filter=all">' . __( 'All', 'calculogic' ) . '</a> | ';
     echo '<a href="?filter=template">' . __( 'Templates', 'calculogic' ) . '</a> | ';
@@ -100,7 +111,7 @@ function calculogic_dashboard_content() {
             echo '<td>' . esc_html( $post->post_title ) . '</td>';
             echo '<td>' . ucfirst( esc_html( $item_type ) ) . '</td>';
             echo '<td>';
-            echo '<button class="calculogic-edit" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Edit', 'calculogic' ) . '</button>';
+            echo '<button class="calculogic-edit" data-id="' . esc_attr( $post->ID ) . '" onclick="window.location.href=\'' . admin_url( 'admin.php?page=calculogic-builder&item_id=' . $post->ID ) . '\'">' . __( 'Edit', 'calculogic' ) . '</button>';
             echo '<button class="calculogic-quick-edit" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Quick Edit', 'calculogic' ) . '</button>';
             echo '<button class="calculogic-duplicate" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Duplicate', 'calculogic' ) . '</button>';
             echo '<button class="calculogic-delete" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Delete', 'calculogic' ) . '</button>';
@@ -241,5 +252,23 @@ function calculogic_dashboard_content() {
     })(jQuery);
     </script>
     <?php
+}
+
+/**
+ * Configurations Tab Content
+ */
+function calculogic_configurations_tab_content() {
+    echo '<h2>' . __( 'Configurations', 'calculogic' ) . '</h2>';
+    echo '<p>' . __( 'Manage your field configurations and favorites here.', 'calculogic' ) . '</p>';
+    // Add logic to display and manage configurations.
+}
+
+/**
+ * Narrative/Gaming Tab Content
+ */
+function calculogic_narrative_tab_content() {
+    echo '<h2>' . __( 'Narrative/Gaming', 'calculogic' ) . '</h2>';
+    echo '<p>' . __( 'Explore templates and quizzes for creative projects.', 'calculogic' ) . '</p>';
+    // Add logic to display narrative/gaming tools and resources.
 }
 ?>
