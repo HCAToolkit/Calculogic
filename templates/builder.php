@@ -48,9 +48,8 @@ $item_content = $item_id ? get_post_field( 'post_content', $item_id ) : '';
         e.preventDefault();
 
         const data = {
-            action: '<?php echo $item_id ? 'update_calculogic_item' : 'create_calculogic_item'; ?>',
+            action: 'create_calculogic_item',
             nonce: calculogic_nonce,
-            id: <?php echo $item_id; ?>,
             title: $('#calculogic-item-title').val(),
             type: $('#calculogic-item-type').val(),
             content: $('#calculogic-item-content').val()
@@ -58,7 +57,7 @@ $item_content = $item_id ? get_post_field( 'post_content', $item_id ) : '';
 
         $.post(ajaxurl, data, function(response) {
             if (response.success) {
-                alert('<?php echo $item_id ? __( "Item updated successfully!", "calculogic" ) : __( "Item created successfully!", "calculogic" ); ?>');
+                alert('<?php echo __( "Item created successfully!", "calculogic" ); ?>');
                 window.location.href = '<?php echo home_url( "/calculogic-dashboard/" ); ?>';
             } else {
                 alert(response.data || '<?php echo __( "An error occurred. Please try again.", "calculogic" ); ?>');

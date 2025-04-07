@@ -9,6 +9,7 @@
  */
 
 function calculogic_load_custom_templates( $template ) {
+    // Check if the current page is the "Calculogic Builder" page
     if ( is_page( 'calculogic-builder' ) ) {
         $custom_template = plugin_dir_path( __FILE__ ) . '../templates/builder.php';
         if ( file_exists( $custom_template ) ) {
