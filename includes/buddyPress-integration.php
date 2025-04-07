@@ -74,7 +74,7 @@ function calculogic_type_tab_content() {
     $filter = isset( $_GET['filter'] ) ? sanitize_text_field( $_GET['filter'] ) : 'all';
 
     echo '<h2>' . __( 'Your Calculogic Items', 'calculogic' ) . '</h2>';
-    echo '<button id="calculogic-create-new" type="button" onclick="window.location.href=\'' . admin_url( 'admin.php?page=calculogic-builder' ) . '\'">' . __( 'Create New Item', 'calculogic' ) . '</button>';
+    echo '<button id="calculogic-create-new" type="button" onclick="window.location.href=\'' . home_url( '/calculogic-builder/' ) . '\'">' . __( 'Create New Item', 'calculogic' ) . '</button>';
     echo '<div class="calculogic-filters">';
     echo '<a href="?filter=all">' . __( 'All', 'calculogic' ) . '</a> | ';
     echo '<a href="?filter=template">' . __( 'Templates', 'calculogic' ) . '</a> | ';
@@ -111,7 +111,7 @@ function calculogic_type_tab_content() {
             echo '<td>' . esc_html( $post->post_title ) . '</td>';
             echo '<td>' . ucfirst( esc_html( $item_type ) ) . '</td>';
             echo '<td>';
-            echo '<button class="calculogic-edit" data-id="' . esc_attr( $post->ID ) . '" onclick="window.location.href=\'' . admin_url( 'admin.php?page=calculogic-builder&item_id=' . $post->ID ) . '\'">' . __( 'Edit', 'calculogic' ) . '</button>';
+            echo '<button class="calculogic-edit" data-id="' . esc_attr( $post->ID ) . '" onclick="window.location.href=\'' . home_url( '/calculogic-builder/?item_id=' . $post->ID ) . '\'">' . __( 'Edit', 'calculogic' ) . '</button>';
             echo '<button class="calculogic-quick-edit" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Quick Edit', 'calculogic' ) . '</button>';
             echo '<button class="calculogic-duplicate" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Duplicate', 'calculogic' ) . '</button>';
             echo '<button class="calculogic-delete" data-id="' . esc_attr( $post->ID ) . '">' . __( 'Delete', 'calculogic' ) . '</button>';

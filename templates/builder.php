@@ -59,7 +59,7 @@ $item_content = $item_id ? get_post_field( 'post_content', $item_id ) : '';
         $.post(ajaxurl, data, function(response) {
             if (response.success) {
                 alert('<?php echo $item_id ? __( "Item updated successfully!", "calculogic" ) : __( "Item created successfully!", "calculogic" ); ?>');
-                window.location.href = '<?php echo admin_url( "admin.php?page=calculogic-dashboard" ); ?>';
+                window.location.href = '<?php echo home_url( "/calculogic-dashboard/" ); ?>';
             } else {
                 alert(response.data || '<?php echo __( "An error occurred. Please try again.", "calculogic" ); ?>');
             }

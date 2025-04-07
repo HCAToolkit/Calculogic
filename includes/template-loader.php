@@ -9,6 +9,13 @@
  */
 
 function calculogic_load_custom_templates( $template ) {
+    if ( is_page( 'calculogic-builder' ) ) {
+        $custom_template = plugin_dir_path( __FILE__ ) . '../templates/builder.php';
+        if ( file_exists( $custom_template ) ) {
+            return $custom_template;
+        }
+    }
+
     // Check if the current post type is 'calculogic_type'
     if ( is_singular( 'calculogic_type' ) ) {
         global $post;
