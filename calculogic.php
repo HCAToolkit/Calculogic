@@ -94,8 +94,10 @@ function calculogic_enqueue_assets() {
     // Enqueue the plugin's main CSS file for styling
     wp_enqueue_style( 'calculogic-style', plugin_dir_url( __FILE__ ) . 'assets/css/style.css' );
 
+    // Enqueue jQuery (WordPress includes jQuery by default)
+    wp_enqueue_script( 'jquery' );
+
     // Enqueue the plugin's main JavaScript file for interactivity
-    // The script depends on jQuery and is loaded in the footer
     wp_enqueue_script( 'calculogic-script', plugin_dir_url( __FILE__ ) . 'assets/js/script.js', array( 'jquery' ), null, true );
 
     // Localize script to pass AJAX URL and nonce

@@ -80,7 +80,7 @@ if ( ! $item_id && isset( $_GET['item_id'] ) ) {
 </div>
 
 <script type="text/javascript">
-(function($) {
+jQuery(function($) {
     // Ensure calculogic_data is defined
     if (typeof calculogic_data === 'undefined') {
         console.error('calculogic_data is not defined. Ensure wp_localize_script is working correctly.');
@@ -141,5 +141,5 @@ if ( ! $item_id && isset( $_GET['item_id'] ) ) {
 
     // Show the first tab by default
     $('.tab-navigation a:first').trigger('click');
-})(jQuery);
+});
 </script>
