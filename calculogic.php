@@ -97,12 +97,8 @@ function calculogic_enqueue_assets() {
     // Enqueue jQuery (WordPress includes jQuery by default)
     wp_enqueue_script( 'jquery' );
 
-    // Enqueue WordPress dependencies (if needed)
-    wp_enqueue_script( 'wp-i18n' );
-    wp_enqueue_script( 'wp-element' );
-
     // Enqueue the plugin's main JavaScript file for interactivity
-    wp_enqueue_script( 'calculogic-script', plugin_dir_url( __FILE__ ) . 'assets/js/script.js', array( 'jquery', 'wp-i18n', 'wp-element' ), null, true );
+    wp_enqueue_script( 'calculogic-script', plugin_dir_url( __FILE__ ) . 'assets/js/script.js', array( 'jquery' ), null, true );
 
     // Localize script to pass AJAX URL and nonce
     wp_localize_script( 'calculogic-script', 'calculogic_data', array(
@@ -112,27 +108,18 @@ function calculogic_enqueue_assets() {
 }
 add_action( 'wp_enqueue_scripts', 'calculogic_enqueue_assets' );
 
+/**
+ * Force Load WordPress's Default jQuery
+ *
+ * This function ensures that WordPress's default version of jQuery is loaded, even if another plugin or theme deregisters it.
+ */
+function calculogic_force_load_jquery() {
+    if ( ! is_admin() ) {
+        wp_deregister_script( 'jquery' );
+        wp_register_script( 'jquery', includes_url( '/js/jquery/jquery.min.js' ), array(), null, true );
+        wp_enqueue_script( 'jquery' );
+    }
+}
+add_action( 'wp_enqueue_scripts', 'calculogic_force_load_jquery', 1 );
 
-
-
-
-
-
-
-
-
-
-?>add_action( 'wp_enqueue_scripts', 'calculogic_deregister_open_sans', 20 );}    wp_deregister_style( 'open-sans' );function calculogic_deregister_open_sans() { */ * This function deregisters the Open Sans font to avoid loading it if it is not required. * * Deregister Open Sans Font/**
-
-
-
-
-
-
-
-
-
-
-
-add_action( 'enqueue_block_editor_assets', 'calculogic_enqueue_gutenberg_assets' );}    wp_enqueue_script( 'wp-data' );    wp_enqueue_script( 'wp-components' );    wp_enqueue_script( 'wp-editor' );    wp_enqueue_script( 'wp-blocks' );    // Enqueue Gutenberg dependenciesfunction calculogic_enqueue_gutenberg_assets() { */ * This function enqueues the necessary Gutenberg dependencies for the plugin. * * Enqueue Gutenberg Assets/**add_action( 'wp_enqueue_scripts', 'calculogic_enqueue_assets' );
 ?>
