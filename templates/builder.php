@@ -81,6 +81,13 @@ if ( ! $item_id && isset( $_GET['item_id'] ) ) {
 
 <script type="text/javascript">
 (function($) {
+    // Ensure calculogic_data is defined
+    if (typeof calculogic_data === 'undefined') {
+        console.error('calculogic_data is not defined. Ensure wp_localize_script is working correctly.');
+        alert('<?php echo __( "A critical error occurred. Please contact the administrator.", "calculogic" ); ?>');
+        return;
+    }
+
     // Handle Initial Settings Form Submission
     $('#initial-settings-form').on('submit', function(e) {
         e.preventDefault();
@@ -116,9 +123,11 @@ if ( ! $item_id && isset( $_GET['item_id'] ) ) {
                 $('#initial-settings-tab').hide();
                 $('#content-tabs').show();
             } else {
+                console.error('Error:', response.data || 'Unknown error occurred.');
                 alert(response.data || '<?php echo __( "An error occurred. Please try again.", "calculogic" ); ?>');
             }
-        }).fail(function() {
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error('AJAX Error:', textStatus, errorThrown);
             alert('<?php echo __( "Failed to communicate with the server. Please try again.", "calculogic" ); ?>');
         });
     });
