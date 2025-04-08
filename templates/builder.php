@@ -86,11 +86,21 @@ $item_title = $item_id ? get_the_title( $item_id ) : '';
         $.post(ajaxurl, data, function(response) {
             if (response.success) {
                 alert('<?php echo __( "Settings saved successfully!", "calculogic" ); ?>');
+
+                // Transition to the content tabs
                 $('#initial-settings-tab').hide();
                 $('#content-tabs').show();
+
+                // Optionally, update the URL to include the item ID
+                if (!<?php echo $item_id; ?>) {
+                    const newUrl = '<?php echo home_url( "/calculogic-builder/" ); ?>?item_id=' + response.data.id;
+                    window.history.pushState({ path: newUrl }, '', newUrl);
+                }
             } else {
                 alert(response.data || '<?php echo __( "An error occurred. Please try again.", "calculogic" ); ?>');
             }
+        }).fail(function() {
+            alert('<?php echo __( "Failed to communicate with the server. Please try again.", "calculogic" ); ?>');
         });
     });
 
