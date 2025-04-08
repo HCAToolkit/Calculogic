@@ -97,6 +97,12 @@ function calculogic_enqueue_assets() {
     // Enqueue the plugin's main JavaScript file for interactivity
     // The script depends on jQuery and is loaded in the footer
     wp_enqueue_script( 'calculogic-script', plugin_dir_url( __FILE__ ) . 'assets/js/script.js', array( 'jquery' ), null, true );
+
+    // Localize script to pass AJAX URL and nonce
+    wp_localize_script( 'calculogic-script', 'calculogic_data', array(
+        'ajaxurl' => admin_url( 'admin-ajax.php' ),
+        'nonce'   => wp_create_nonce( 'calculogic_nonce' ),
+    ) );
 }
 add_action( 'wp_enqueue_scripts', 'calculogic_enqueue_assets' );
 ?>

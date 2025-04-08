@@ -49,6 +49,8 @@ function calculogic_query_post_type( $post_type, $args = array() ) {
  * AJAX handler to load CPT items.
  */
 function calculogic_load_items() {
+    error_log( 'AJAX Request: ' . print_r( $_POST, true ) );
+
     $search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
     $filter = isset($_POST['filter']) ? sanitize_text_field($_POST['filter']) : 'all';
 
@@ -81,8 +83,12 @@ add_action('wp_ajax_nopriv_load_calculogic_items', 'calculogic_load_items');
  * AJAX handler to create or update an item.
  */
 function calculogic_save_item_settings() {
+    error_log( 'AJAX Request: ' . print_r( $_POST, true ) );
+
     // Verify nonce for security
-    check_ajax_referer( 'calculogic_nonce', 'nonce' );
+    if ( ! check_ajax_referer( 'calculogic_nonce', 'nonce', false ) ) {
+        wp_send_json_error( __( 'Invalid nonce. Please refresh the page and try again.', 'calculogic' ) );
+    }
 
     $post_id = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : 0;
     $title = isset( $_POST['title'] ) ? sanitize_text_field( $_POST['title'] ) : '';
@@ -113,6 +119,7 @@ function calculogic_save_item_settings() {
         ) );
 
         if ( is_wp_error( $post_id ) ) {
+            error_log( 'Failed to create item: ' . $post_id->get_error_message() );
             wp_send_json_error( __( 'Failed to create item.', 'calculogic' ) );
         }
 
@@ -128,8 +135,12 @@ add_action( 'wp_ajax_update_calculogic_item', 'calculogic_save_item_settings' );
  * AJAX handler to delete an item.
  */
 function calculogic_delete_item() {
+    error_log( 'AJAX Request: ' . print_r( $_POST, true ) );
+
     // Verify nonce for security
-    check_ajax_referer( 'calculogic_nonce', 'nonce' );
+    if ( ! check_ajax_referer( 'calculogic_nonce', 'nonce', false ) ) {
+        wp_send_json_error( __( 'Invalid nonce. Please refresh the page and try again.', 'calculogic' ) );
+    }
 
     $post_id = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : 0;
 
@@ -151,8 +162,12 @@ add_action( 'wp_ajax_delete_calculogic_item', 'calculogic_delete_item' );
  * AJAX handler to read an item.
  */
 function calculogic_read_item() {
+    error_log( 'AJAX Request: ' . print_r( $_POST, true ) );
+
     // Verify nonce for security
-    check_ajax_referer( 'calculogic_nonce', 'nonce' );
+    if ( ! check_ajax_referer( 'calculogic_nonce', 'nonce', false ) ) {
+        wp_send_json_error( __( 'Invalid nonce. Please refresh the page and try again.', 'calculogic' ) );
+    }
 
     $post_id = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : 0;
 

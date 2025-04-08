@@ -16,19 +16,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 $item_id = isset( $_GET['item_id'] ) ? intval( $_GET['item_id'] ) : 0;
 $item_type = $item_id ? get_post_meta( $item_id, 'calculogic_item_type', true ) : '';
 $item_title = $item_id ? get_the_title( $item_id ) : '';
-?>
 
+// Redirect to dashboard if item_id is invalid
+if ( ! $item_id && isset( $_GET['item_id'] ) ) {
+    wp_redirect( home_url( '/calculogic-dashboard/' ) );
+    exit;
+}
+?>
 <div id="calculogic-builder">
     <h2><?php echo $item_id ? __( 'Edit Item', 'calculogic' ) : __( 'Create New Item', 'calculogic' ); ?></h2>
 
     <!-- Initial Settings Tab -->
-    <div id="initial-settings-tab">
+    <div id="initial-settings-tab" style="<?php echo $item_id ? 'display: none;' : ''; ?>">
         <form id="initial-settings-form">
             <label for="calculogic-item-title"><?php _e( 'Name/Title:', 'calculogic' ); ?></label>
-            <input type="text" id="calculogic-item-title" name="title" value="<?php echo esc_attr( $item_title ); ?>" required>
+            <input type="text" id="calculogic-item-title" name="title" aria-required="true" value="<?php echo esc_attr( $item_title ); ?>" required>
 
             <label for="calculogic-item-type"><?php _e( 'Item Type:', 'calculogic' ); ?></label>
-            <select id="calculogic-item-type" name="type" required>
+            <select id="calculogic-item-type" name="type" aria-required="true" required>
                 <option value="form" <?php selected( $item_type, 'form' ); ?>><?php _e( 'Form Template', 'calculogic' ); ?></option>
                 <option value="calculator" <?php selected( $item_type, 'calculator' ); ?>><?php _e( 'Calculator', 'calculogic' ); ?></option>
                 <option value="quiz" <?php selected( $item_type, 'quiz' ); ?>><?php _e( 'Quiz', 'calculogic' ); ?></option>
@@ -38,8 +43,13 @@ $item_title = $item_id ? get_the_title( $item_id ) : '';
         </form>
     </div>
 
+    <!-- Success Message -->
+    <div id="success-message" style="display: none; color: green; text-align: center; margin-top: 20px;">
+        <?php _e( 'Settings saved successfully! You can now configure your item.', 'calculogic' ); ?>
+    </div>
+
     <!-- Content Tabs -->
-    <div id="content-tabs" style="display: none;">
+    <div id="content-tabs" style="<?php echo $item_id ? 'display: block;' : 'display: none;'; ?>">
         <ul class="tab-navigation">
             <li><a href="#build-tab"><?php _e( 'Build', 'calculogic' ); ?></a></li>
             <li><a href="#workflow-tab"><?php _e( 'Workflow', 'calculogic' ); ?></a></li>
@@ -75,27 +85,36 @@ $item_title = $item_id ? get_the_title( $item_id ) : '';
     $('#initial-settings-form').on('submit', function(e) {
         e.preventDefault();
 
+        const title = $('#calculogic-item-title').val();
+        const type = $('#calculogic-item-type').val();
+
+        if (!title || !type) {
+            alert('<?php echo __( "Please fill out all required fields.", "calculogic" ); ?>');
+            return;
+        }
+
         const data = {
             action: '<?php echo $item_id ? 'update_calculogic_item' : 'create_calculogic_item'; ?>',
-            nonce: calculogic_nonce,
+            nonce: calculogic_data.nonce,
             id: <?php echo $item_id; ?>,
-            title: $('#calculogic-item-title').val(),
-            type: $('#calculogic-item-type').val()
+            title: title,
+            type: type
         };
 
-        $.post(ajaxurl, data, function(response) {
+        $.post(calculogic_data.ajaxurl, data, function(response) {
             if (response.success) {
-                alert('<?php echo __( "Settings saved successfully!", "calculogic" ); ?>');
+                $('#success-message').show();
+                setTimeout(function() {
+                    $('#success-message').fadeOut();
+                }, 3000);
 
-                // Transition to the content tabs
-                $('#initial-settings-tab').hide();
-                $('#content-tabs').show();
-
-                // Optionally, update the URL to include the item ID
                 if (!<?php echo $item_id; ?>) {
                     const newUrl = '<?php echo home_url( "/calculogic-builder/" ); ?>?item_id=' + response.data.id;
                     window.history.pushState({ path: newUrl }, '', newUrl);
                 }
+
+                $('#initial-settings-tab').hide();
+                $('#content-tabs').show();
             } else {
                 alert(response.data || '<?php echo __( "An error occurred. Please try again.", "calculogic" ); ?>');
             }
