@@ -78,12 +78,13 @@ add_action('wp_ajax_load_calculogic_items', 'calculogic_load_items');
 add_action('wp_ajax_nopriv_load_calculogic_items', 'calculogic_load_items');
 
 /**
- * AJAX handler to create a new item.
+ * AJAX handler to create or update an item.
  */
-function calculogic_create_item() {
+function calculogic_save_item_settings() {
     // Verify nonce for security
     check_ajax_referer( 'calculogic_nonce', 'nonce' );
 
+    $post_id = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : 0;
     $title = isset( $_POST['title'] ) ? sanitize_text_field( $_POST['title'] ) : '';
     $type = isset( $_POST['type'] ) ? sanitize_text_field( $_POST['type'] ) : '';
 
@@ -91,51 +92,37 @@ function calculogic_create_item() {
         wp_send_json_error( __( 'Title and type are required.', 'calculogic' ) );
     }
 
-    // Create a new post of the 'calculogic_type' custom post type
-    $post_id = wp_insert_post( array(
-        'post_title'  => $title,
-        'post_type'   => 'calculogic_type',
-        'post_status' => 'publish',
-    ) );
+    if ( $post_id ) {
+        // Update existing item
+        $updated = wp_update_post( array(
+            'ID'         => $post_id,
+            'post_title' => $title,
+        ) );
 
-    if ( is_wp_error( $post_id ) ) {
-        wp_send_json_error( __( 'Failed to create item.', 'calculogic' ) );
+        if ( is_wp_error( $updated ) || $updated === 0 ) {
+            wp_send_json_error( __( 'Failed to update item.', 'calculogic' ) );
+        }
+
+        update_post_meta( $post_id, 'calculogic_item_type', $type );
+    } else {
+        // Create new item
+        $post_id = wp_insert_post( array(
+            'post_title'  => $title,
+            'post_type'   => 'calculogic_type',
+            'post_status' => 'publish',
+        ) );
+
+        if ( is_wp_error( $post_id ) ) {
+            wp_send_json_error( __( 'Failed to create item.', 'calculogic' ) );
+        }
+
+        update_post_meta( $post_id, 'calculogic_item_type', $type );
     }
-
-    // Assign the item type as a meta field
-    update_post_meta( $post_id, 'calculogic_item_type', $type );
 
     wp_send_json_success( array( 'id' => $post_id, 'title' => $title, 'type' => $type ) );
 }
-add_action( 'wp_ajax_create_calculogic_item', 'calculogic_create_item' );
-add_action( 'wp_ajax_nopriv_create_calculogic_item', 'calculogic_create_item' );
-
-/**
- * AJAX handler to update an item.
- */
-function calculogic_update_item() {
-    // Verify nonce for security
-    check_ajax_referer( 'calculogic_nonce', 'nonce' );
-
-    $post_id = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : 0;
-    $title = isset( $_POST['title'] ) ? sanitize_text_field( $_POST['title'] ) : '';
-
-    if ( empty( $post_id ) || empty( $title ) ) {
-        wp_send_json_error( __( 'ID and title are required.', 'calculogic' ) );
-    }
-
-    $updated = wp_update_post( array(
-        'ID'         => $post_id,
-        'post_title' => $title,
-    ) );
-
-    if ( is_wp_error( $updated ) || $updated === 0 ) {
-        wp_send_json_error( __( 'Failed to update item.', 'calculogic' ) );
-    }
-
-    wp_send_json_success( array( 'id' => $post_id, 'title' => $title ) );
-}
-add_action( 'wp_ajax_update_calculogic_item', 'calculogic_update_item' );
+add_action( 'wp_ajax_create_calculogic_item', 'calculogic_save_item_settings' );
+add_action( 'wp_ajax_update_calculogic_item', 'calculogic_save_item_settings' );
 
 /**
  * AJAX handler to delete an item.
