@@ -80,7 +80,7 @@ if ( ! $item_id && isset( $_GET['item_id'] ) ) {
 </div>
 
 <script type="text/javascript">
-jQuery(function($) {
+jQuery(document).ready(function($) {
     // Ensure calculogic_data is defined
     if (typeof calculogic_data === 'undefined') {
         console.error('calculogic_data is not defined. Ensure wp_localize_script is working correctly.');
