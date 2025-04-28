@@ -229,49 +229,120 @@ function calculogic_register_config_taxonomy() {
     register_taxonomy( 'calculogic_config_category', array( 'calculogic_config' ), $args );
 }
 add_action( 'init', 'calculogic_register_config_taxonomy' );
-// Add a Meta Box to the Types CPT for Builder Item Type
-function calculogic_add_type_meta_box() {
+
+/**
+ * Register the Results CPT
+ *
+ * This CPT captures user inputs and computed outputs when a calculogic_Type is taken or filled.
+ */
+function calculogic_register_results_cpt() {
+    $labels = array(
+        'name'                  => __( 'Calculogic Results', 'calculogic' ),
+        'singular_name'         => __( 'Calculogic Result', 'calculogic' ),
+        'menu_name'             => __( 'Results', 'calculogic' ),
+        'add_new'               => __( 'Add New Result', 'calculogic' ),
+        'add_new_item'          => __( 'Add New Result', 'calculogic' ),
+        'edit_item'             => __( 'Edit Result', 'calculogic' ),
+        'new_item'              => __( 'New Result', 'calculogic' ),
+        'view_item'             => __( 'View Result', 'calculogic' ),
+        'search_items'          => __( 'Search Results', 'calculogic' ),
+        'not_found'             => __( 'No results found', 'calculogic' ),
+        'not_found_in_trash'    => __( 'No results found in trash', 'calculogic' ),
+    );
+    $args = array(
+        'labels'                => $labels,
+        'public'                => false,
+        'has_archive'           => false,
+        'supports'              => array( 'title', 'editor' ),
+        'rewrite'               => false,
+        'show_in_rest'          => false,
+    );
+    register_post_type( 'calculogic_results', $args );
+}
+add_action( 'init', 'calculogic_register_results_cpt' );
+
+/**
+ * Register the Knowledge CPT
+ *
+ * This CPT stores domain data entries (e.g., JS classes/objects) that can be referenced by calculogic_Type.
+ */
+function calculogic_register_knowledge_cpt() {
+    $labels = array(
+        'name'                  => __( 'Calculogic Knowledge', 'calculogic' ),
+        'singular_name'         => __( 'Calculogic Knowledge', 'calculogic' ),
+        'menu_name'             => __( 'Knowledge', 'calculogic' ),
+        'add_new'               => __( 'Add New Knowledge', 'calculogic' ),
+        'add_new_item'          => __( 'Add New Knowledge', 'calculogic' ),
+        'edit_item'             => __( 'Edit Knowledge', 'calculogic' ),
+        'new_item'              => __( 'New Knowledge', 'calculogic' ),
+        'view_item'             => __( 'View Knowledge', 'calculogic' ),
+        'search_items'          => __( 'Search Knowledge', 'calculogic' ),
+        'not_found'             => __( 'No knowledge entries found', 'calculogic' ),
+        'not_found_in_trash'    => __( 'No knowledge entries found in trash', 'calculogic' ),
+    );
+    $args = array(
+        'labels'                => $labels,
+        'public'                => true,
+        'has_archive'           => true,
+        'supports'              => array( 'title', 'editor' ),
+        'rewrite'               => array( 'slug' => 'calculogic-knowledge' ),
+        'show_in_rest'          => true,
+    );
+    register_post_type( 'calculogic_knowledge', $args );
+}
+add_action( 'init', 'calculogic_register_knowledge_cpt' );
+
+/**
+ * Add Meta Boxes for JSON Config and Knowledge References
+ */
+function calculogic_add_json_meta_boxes() {
     add_meta_box(
-        'calculogic_type_meta_box',
-        __( 'Builder Item Type', 'calculogic' ),
-        'calculogic_render_type_meta_box',
+        'calculogic_json_meta_box',
+        __( 'JSON Configuration', 'calculogic' ),
+        'calculogic_render_json_meta_box',
         'calculogic_type',
-        'side',
-        'default'
+        'normal',
+        'high'
     );
 }
-add_action( 'add_meta_boxes', 'calculogic_add_type_meta_box' );
+add_action( 'add_meta_boxes', 'calculogic_add_json_meta_boxes' );
 
-function calculogic_render_type_meta_box( $post ) {
-    $type = get_post_meta( $post->ID, 'calculogic_item_type', true );
-    $options = array( 'calculator', 'quiz', 'template' );
+function calculogic_render_json_meta_box( $post ) {
+    $config_json = get_post_meta( $post->ID, '_calc_config_json', true );
+    $knowledge_refs = get_post_meta( $post->ID, '_calc_knowledge_refs', true );
 
-    echo '<select name="calculogic_item_type">';
-    foreach ( $options as $option ) {
-        $selected = ( $type === $option ) ? 'selected' : '';
-        echo '<option value="' . esc_attr( $option ) . '" ' . $selected . '>' . ucfirst( $option ) . '</option>';
-    }
-    echo '</select>';
+    echo '<label for="calc_config_json">' . __( 'Configuration JSON:', 'calculogic' ) . '</label>';
+    echo '<textarea id="calc_config_json" name="calc_config_json" rows="10" style="width:100%;">' . esc_textarea( $config_json ) . '</textarea>';
+
+    echo '<label for="calc_knowledge_refs">' . __( 'Knowledge References (comma-separated IDs):', 'calculogic' ) . '</label>';
+    echo '<input type="text" id="calc_knowledge_refs" name="calc_knowledge_refs" value="' . esc_attr( implode( ',', (array) $knowledge_refs ) ) . '" style="width:100%;" />';
 }
 
-function calculogic_save_type_meta_box( $post_id ) {
-    if ( isset( $_POST['calculogic_item_type'] ) ) {
-        update_post_meta( $post_id, 'calculogic_item_type', sanitize_text_field( $_POST['calculogic_item_type'] ) );
+function calculogic_save_json_meta_box( $post_id ) {
+    if ( isset( $_POST['calc_config_json'] ) ) {
+        update_post_meta( $post_id, '_calc_config_json', sanitize_textarea_field( $_POST['calc_config_json'] ) );
+    }
+    if ( isset( $_POST['calc_knowledge_refs'] ) ) {
+        $refs = array_map( 'intval', explode( ',', sanitize_text_field( $_POST['calc_knowledge_refs'] ) ) );
+        update_post_meta( $post_id, '_calc_knowledge_refs', $refs );
     }
 }
-add_action( 'save_post', 'calculogic_save_type_meta_box' );
+add_action( 'save_post', 'calculogic_save_json_meta_box' );
 
-// Filter Types by Builder Item Type in Admin
-function calculogic_filter_types_by_item_type( $query ) {
-    if ( is_admin() && $query->is_main_query() && $query->get( 'post_type' ) === 'calculogic_type' ) {
-        if ( isset( $_GET['calculogic_item_type'] ) && $_GET['calculogic_item_type'] ) {
-            $query->set( 'meta_query', array(
-                array(
-                    'key'   => 'calculogic_item_type',
-                    'value' => sanitize_text_field( $_GET['calculogic_item_type'] ),
-                ),
-            ) );
-        }
-    }
+/**
+ * Handle Front-End Submission to Spawn Results Post
+ */
+function calculogic_handle_submission( $post_id, $user_inputs, $computed_outputs ) {
+    $result_id = wp_insert_post( array(
+        'post_type'   => 'calculogic_results',
+        'post_title'  => sprintf( __( 'Result for %s', 'calculogic' ), get_the_title( $post_id ) ),
+        'post_status' => 'publish',
+        'meta_input'  => array(
+            '_parent_calculogic_type' => $post_id,
+            '_user_inputs'            => $user_inputs,
+            '_computed_outputs'       => $computed_outputs,
+        ),
+    ) );
+
+    return $result_id;
 }
-add_action( 'pre_get_posts', 'calculogic_filter_types_by_item_type' );
